@@ -35,9 +35,7 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
-    // In a real app, use Hilt to provide these. 
-    // For this boilerplate, we assume a factory or manual DI.
-    // val fieldNotesViewModel: FieldNotesViewModel = viewModel()
+    val fieldNotesViewModel: FieldNotesViewModel = viewModel(factory = FieldNotesViewModel.Factory)
 
     val items = listOf(
         Screen.FieldNotes,
@@ -74,10 +72,9 @@ fun MainScreen() {
             modifier = Modifier.padding(innerPadding)
         ) {
             composable(Screen.FieldNotes.route) {
-                // ProjectListScreen(viewModel = fieldNotesViewModel) { project ->
-                //    navController.navigate(Screen.ProjectDetail.createRoute(project.id))
-                // }
-                Text("Project List Screen Placeholder") 
+                ProjectListScreen(viewModel = fieldNotesViewModel) { project ->
+                    navController.navigate(Screen.ProjectDetail.createRoute(project.id))
+                }
             }
             
             composable(Screen.Calculators.route) {
@@ -88,9 +85,13 @@ fun MainScreen() {
                 route = Screen.ProjectDetail.route,
                 arguments = listOf(navArgument("projectId") { type = NavType.LongType })
             ) { backStackEntry ->
-                val projectId = backStackEntry.arguments?.getLong("projectId")
-                // Fetch project and visits from ViewModel, then show ProjectSummaryScreen
-                Text("Project Summary for ID: $projectId")
+                val projectId = backStackEntry.arguments?.getLong("projectId") ?: return@composable
+                val visits by fieldNotesViewModel.getVisits(projectId).collectAsState()
+                val project = fieldNotesViewModel.projects.collectAsState().value.find { it.id == projectId }
+                
+                if (project != null) {
+                    ProjectSummaryScreen(project = project, visits = visits)
+                }
             }
         }
     }

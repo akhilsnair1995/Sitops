@@ -11,10 +11,23 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.CreationExtras
+
 class FieldNotesViewModel(
     private val projectDao: ProjectDao,
     private val siteVisitDao: SiteVisitDao
 ) : ViewModel() {
+
+    companion object {
+        val Factory: ViewModelProvider.Factory = object : ViewModelProvider.Factory {
+            @Suppress("UNCHECKED_CAST")
+            override fun <T : ViewModel> create(modelClass: Class<T>, extras: CreationExtras): T {
+                val db = SiteOpsApplication.database
+                return FieldNotesViewModel(db.projectDao(), db.siteVisitDao()) as T
+            }
+        }
+    }
 
     val projects: StateFlow<List<Project>> = projectDao.getAllProjects()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
