@@ -67,7 +67,7 @@ dependencies {
     implementation("io.coil-kt:coil-compose:2.5.0")
 
     // PDF (Updated to a more stable version for modern Gradle)
-    implementation("com.github.barteksc:android-pdf-viewer:3.2.0-beta.1")
+    implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.3")
 
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")

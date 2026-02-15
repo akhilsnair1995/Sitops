@@ -20,6 +20,8 @@ import com.siteops.ui.fieldnotes.ProjectListScreen
 import com.siteops.ui.fieldnotes.ProjectSummaryScreen
 import com.siteops.ui.navigation.Screen
 import com.siteops.ui.theme.SiteOpsTheme
+import androidx.compose.runtime.collectAsState
+import com.siteops.data.model.Project
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {

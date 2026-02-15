@@ -13,6 +13,7 @@ import kotlinx.coroutines.launch
 
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewmodel.CreationExtras
+import com.siteops.SiteOpsApplication
 
 class FieldNotesViewModel(
     private val projectDao: ProjectDao,

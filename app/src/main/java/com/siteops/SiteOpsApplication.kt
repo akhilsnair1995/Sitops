@@ -14,7 +14,7 @@ class SiteOpsApplication : Application() {
 
     override fun onCreate() {
         super.onCreate()
-        database = Room.databaseOf(
+        database = Room.databaseBuilder(
             this,
             SiteOpsDatabase::class.java,
             "siteops-db"

@@ -1,0 +1,19 @@
+{
+    "logs": [
+        {
+            "outputFile": "com.siteops.app-mergeDebugResources-51:/values-v16/values-v16.xml",
+            "map": [
+                {
+                    "source": "C:\\Users\\akhil\\.gradle\\caches\\9.2.1\\transforms\\ab983dd808c0f34a200a364c815fffa1\\workspace\\transformed\\core-1.12.0\\res\\values-v16\\values-v16.xml",
+                    "from": {
+                        "startLines": "2",
+                        "startColumns": "4",
+                        "startOffsets": "55",
+                        "endColumns": "65",
+                        "endOffsets": "116"
+                    }
+                }
+            ]
+        }
+    ]
+}
