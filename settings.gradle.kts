@@ -16,4 +16,3 @@ dependencyResolutionManagement {
 
 rootProject.name = "SiteOps"
 include(":app")
-project(":app").projectDir = file("app")
