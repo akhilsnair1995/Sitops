@@ -14,6 +14,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
+import android.net.Uri
+import android.content.Intent
+import androidx.compose.ui.viewinterop.AndroidView
+import com.github.barteksc.pdfviewer.PDFView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.material.icons.filled.Clear
+import androidx.compose.material.icons.filled.Undo
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -32,18 +39,43 @@ fun SiteVisitDetailScreen(
     viewModel: FieldNotesViewModel,
     onBack: () -> Unit
 ) {
+    val context = LocalContext.current
     var photoUris by remember { mutableStateOf(visit.photoUris) }
-    var pdfUri by remember { mutableStateOf(visit.pdfUri) }
+    var pdfUriString by remember { mutableStateOf(visit.pdfUri) }
     var markups by remember { mutableStateOf(viewModel.deserializeMarkups(visit.markupsJson)) }
 
     val photoPickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.PickMultipleVisualMedia(),
-        onResult = { uris -> photoUris = photoUris + uris.map { it.toString() } }
+        onResult = { uris ->
+            uris.forEach { uri ->
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        uri,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (e: Exception) {
+                    // Log or handle error if needed
+                }
+            }
+            photoUris = photoUris + uris.map { it.toString() }
+        }
     )
 
     val pdfPickerLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent(),
-        onResult = { uri -> pdfUri = uri?.toString() }
+        contract = ActivityResultContracts.OpenDocument(),
+        onResult = { uri ->
+            uri?.let {
+                try {
+                    context.contentResolver.takePersistableUriPermission(
+                        it,
+                        Intent.FLAG_GRANT_READ_URI_PERMISSION
+                    )
+                } catch (e: Exception) {
+                    // Log or handle error if needed
+                }
+                pdfUriString = it.toString()
+            }
+        }
     )
 
     Scaffold(
@@ -51,10 +83,16 @@ fun SiteVisitDetailScreen(
             TopAppBar(
                 title = { Text(visit.title) },
                 actions = {
+                    IconButton(onClick = { markups = emptyList() }) {
+                        Icon(Icons.Default.Clear, contentDescription = "Clear All")
+                    }
+                    IconButton(onClick = { if (markups.isNotEmpty()) markups = markups.dropLast(1) }) {
+                        Icon(Icons.Default.Undo, contentDescription = "Undo")
+                    }
                     IconButton(onClick = {
                         val updatedVisit = visit.copy(
                             photoUris = photoUris,
-                            pdfUri = pdfUri,
+                            pdfUri = pdfUriString,
                             markupsJson = viewModel.serializeMarkups(markups)
                         )
                         viewModel.updateSiteVisit(updatedVisit)
@@ -82,12 +120,15 @@ fun SiteVisitDetailScreen(
                 }
             }
 
-            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+            LazyRow(
+                modifier = Modifier.fillMaxWidth().height(120.dp),
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
                 items(photoUris) { uri ->
                     AsyncImage(
                         model = uri,
                         contentDescription = null,
-                        modifier = Modifier.size(120.dp),
+                        modifier = Modifier.size(120.dp).background(Color.DarkGray),
                         contentScale = ContentScale.Crop
                     )
                 }
@@ -100,23 +141,38 @@ fun SiteVisitDetailScreen(
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
             ) {
-                Text("PDF Markup", style = MaterialTheme.typography.titleMedium)
-                IconButton(onClick = { pdfPickerLauncher.launch("application/pdf") }) {
+                Text("PDF Markup (Tap to Circle)", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = { pdfPickerLauncher.launch(arrayOf("application/pdf")) }) {
                     Icon(Icons.Default.PictureAsPdf, contentDescription = "Select PDF")
                 }
             }
             
-            if (pdfUri != null) {
-                Text("Selected: ${pdfUri?.split("/")?.last()}", style = MaterialTheme.typography.bodySmall)
-            }
-
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
                     .weight(1f)
-                    .background(Color.LightGray)
+                    .background(Color.White)
             ) {
-                // Future: Use AndroidView to host PDFView
+                if (pdfUriString != null) {
+                    val uri = Uri.parse(pdfUriString)
+                    AndroidView(
+                        factory = { ctx ->
+                            PDFView(ctx, null).apply {
+                                fromUri(uri)
+                                    .enableAnnotationRendering(true)
+                                    .scrollHandle(null)
+                                    .load()
+                            }
+                        },
+                        modifier = Modifier.fillMaxSize()
+                    )
+                } else {
+                    Box(modifier = Modifier.fillMaxSize(), contentAlignment = androidx.compose.ui.Alignment.Center) {
+                        Text("No PDF Selected", color = Color.Gray)
+                    }
+                }
+
+                // Overlay remains on top of the PDFView
                 PdfMarkupOverlay(
                     markups = markups,
                     onTap = { markups = markups + it }
