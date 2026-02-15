@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -14,14 +15,11 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
+import com.siteops.data.model.Project
 import com.siteops.ui.calculators.CalculatorsScreen
-import com.siteops.ui.fieldnotes.FieldNotesViewModel
-import com.siteops.ui.fieldnotes.ProjectListScreen
-import com.siteops.ui.fieldnotes.ProjectSummaryScreen
+import com.siteops.ui.fieldnotes.*
 import com.siteops.ui.navigation.Screen
 import com.siteops.ui.theme.SiteOpsTheme
-import androidx.compose.runtime.collectAsState
-import com.siteops.data.model.Project
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -33,9 +31,6 @@ class MainActivity : ComponentActivity() {
         }
     }
 }
-
-import com.siteops.ui.fieldnotes.ProjectDetailScreen
-import androidx.compose.runtime.collectAsState
 
 @Composable
 fun MainScreen() {
@@ -119,8 +114,6 @@ fun MainScreen() {
                     ProjectSummaryScreen(project = project, visits = visits)
                 }
             }
-
-import com.siteops.ui.fieldnotes.SiteVisitDetailScreen
 
             composable(
                 route = Screen.SiteVisitDetail.route,

@@ -63,10 +63,10 @@ dependencies {
     ksp(libs.androidx.room.compiler)
 
     // Image Loading
-    implementation(libs.coil-compose)
+    implementation(libs.coil.compose)
 
     // PDF
-    implementation(libs.android.pdf-viewer)
+    implementation(libs.android.pdf.viewer)
 
     // JSON
     implementation(libs.gson)
