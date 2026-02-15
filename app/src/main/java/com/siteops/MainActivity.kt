@@ -34,6 +34,9 @@ class MainActivity : ComponentActivity() {
     }
 }
 
+import com.siteops.ui.fieldnotes.ProjectDetailScreen
+import androidx.compose.runtime.collectAsState
+
 @Composable
 fun MainScreen() {
     val navController = rememberNavController()
@@ -88,11 +91,50 @@ fun MainScreen() {
                 arguments = listOf(navArgument("projectId") { type = NavType.LongType })
             ) { backStackEntry ->
                 val projectId = backStackEntry.arguments?.getLong("projectId") ?: return@composable
+                val project = fieldNotesViewModel.projects.collectAsState().value.find { it.id == projectId }
+                
+                if (project != null) {
+                    ProjectDetailScreen(
+                        project = project,
+                        viewModel = fieldNotesViewModel,
+                        onVisitClick = { visit ->
+                            navController.navigate(Screen.SiteVisitDetail.createRoute(visit.id))
+                        },
+                        onSummaryClick = {
+                            navController.navigate(Screen.ProjectSummary.createRoute(projectId))
+                        }
+                    )
+                }
+            }
+
+            composable(
+                route = Screen.ProjectSummary.route,
+                arguments = listOf(navArgument("projectId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val projectId = backStackEntry.arguments?.getLong("projectId") ?: return@composable
                 val visits by fieldNotesViewModel.getVisits(projectId).collectAsState()
                 val project = fieldNotesViewModel.projects.collectAsState().value.find { it.id == projectId }
                 
                 if (project != null) {
                     ProjectSummaryScreen(project = project, visits = visits)
+                }
+            }
+
+import com.siteops.ui.fieldnotes.SiteVisitDetailScreen
+
+            composable(
+                route = Screen.SiteVisitDetail.route,
+                arguments = listOf(navArgument("visitId") { type = NavType.LongType })
+            ) { backStackEntry ->
+                val visitId = backStackEntry.arguments?.getLong("visitId") ?: return@composable
+                val visit by fieldNotesViewModel.getVisitById(visitId).collectAsState()
+                
+                visit?.let {
+                    SiteVisitDetailScreen(
+                        visit = it,
+                        viewModel = fieldNotesViewModel,
+                        onBack = { navController.popBackStack() }
+                    )
                 }
             }
         }

@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "com.siteops.app-mergeDebugResources-51:/values-v21/values-v21.xml",
+            "outputFile": "com.siteops.app-mergeDebugResources-52:/values-v21/values-v21.xml",
             "map": [
                 {
-                    "source": "C:\\Users\\akhil\\.gradle\\caches\\9.2.1\\transforms\\ab983dd808c0f34a200a364c815fffa1\\workspace\\transformed\\core-1.12.0\\res\\values-v21\\values-v21.xml",
+                    "source": "C:\\Users\\akhil\\.gradle\\caches\\8.10.2\\transforms\\cf5667518d31e95cff0544dc7346bf81\\transformed\\core-1.12.0\\res\\values-v21\\values-v21.xml",
                     "from": {
                         "startLines": "2,3,4,5,6,7,8,9,10,13",
                         "startColumns": "4,4,4,4,4,4,4,4,4,4",

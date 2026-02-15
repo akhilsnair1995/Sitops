@@ -19,6 +19,9 @@ interface ProjectDao {
 
 @Dao
 interface SiteVisitDao {
+    @Query("SELECT * FROM site_visits WHERE id = :id")
+    fun getVisitById(id: Long): Flow<SiteVisit?>
+
     @Query("SELECT * FROM site_visits WHERE projectId = :projectId ORDER BY date DESC")
     fun getVisitsForProject(projectId: Long): Flow<List<SiteVisit>>
 

@@ -16,4 +16,7 @@ sealed class Screen(val route: String, val title: String, val icon: ImageVector)
     object SiteVisitDetail : Screen("site_visit_detail/{visitId}", "Visit Detail", Icons.Default.List) {
         fun createRoute(visitId: Long) = "site_visit_detail/$visitId"
     }
+    object ProjectSummary : Screen("project_summary/{projectId}", "Project Summary", Icons.Default.List) {
+        fun createRoute(projectId: Long) = "project_summary/$projectId"
+    }
 }

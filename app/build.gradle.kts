@@ -70,6 +70,9 @@ dependencies {
     // PDF (Updated to a more stable version for modern Gradle)
     implementation("com.github.mhiew:android-pdf-viewer:3.2.0-beta.3")
 
+    // JSON Serialization
+    implementation("com.google.code.gson:gson:2.10.1")
+
     testImplementation("junit:junit:4.13.2")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")

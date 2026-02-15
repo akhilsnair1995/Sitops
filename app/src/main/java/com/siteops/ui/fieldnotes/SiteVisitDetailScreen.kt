@@ -15,48 +15,112 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
-import coil.compose.AsyncImage
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.PickVisualMediaRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.AddPhotoAlternate
+import androidx.compose.material.icons.filled.PictureAsPdf
+import androidx.compose.material.icons.filled.Save
 import com.siteops.data.model.SiteVisit
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SiteVisitDetailScreen(
     visit: SiteVisit,
-    onAddMarkup: (Offset) -> Unit,
-    markups: List<Offset>
+    viewModel: FieldNotesViewModel,
+    onBack: () -> Unit
 ) {
-    Column(modifier = Modifier.fillMaxSize().padding(16.dp)) {
-        Text(visit.title, style = MaterialTheme.typography.headlineMedium)
-        Text(visit.date.toString(), style = MaterialTheme.typography.bodySmall)
-        
-        Spacer(modifier = Modifier.height(16.dp))
-        
-        Text("Photo Gallery", style = MaterialTheme.typography.titleMedium)
-        LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(visit.photoUris) { uri ->
-                AsyncImage(
-                    model = uri,
-                    contentDescription = null,
-                    modifier = Modifier.size(120.dp),
-                    contentScale = ContentScale.Crop
+    var photoUris by remember { mutableStateOf(visit.photoUris) }
+    var pdfUri by remember { mutableStateOf(visit.pdfUri) }
+    var markups by remember { mutableStateOf(viewModel.deserializeMarkups(visit.markupsJson)) }
+
+    val photoPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.PickMultipleVisualMedia(),
+        onResult = { uris -> photoUris = photoUris + uris.map { it.toString() } }
+    )
+
+    val pdfPickerLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.GetContent(),
+        onResult = { uri -> pdfUri = uri?.toString() }
+    )
+
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text(visit.title) },
+                actions = {
+                    IconButton(onClick = {
+                        val updatedVisit = visit.copy(
+                            photoUris = photoUris,
+                            pdfUri = pdfUri,
+                            markupsJson = viewModel.serializeMarkups(markups)
+                        )
+                        viewModel.updateSiteVisit(updatedVisit)
+                        onBack()
+                    }) {
+                        Icon(Icons.Default.Save, contentDescription = "Save")
+                    }
+                }
+            )
+        }
+    ) { padding ->
+        Column(modifier = Modifier.fillMaxSize().padding(padding).padding(16.dp)) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text("Photo Gallery", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = {
+                    photoPickerLauncher.launch(
+                        PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
+                    )
+                }) {
+                    Icon(Icons.Default.AddPhotoAlternate, contentDescription = "Add Photos")
+                }
+            }
+
+            LazyRow(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                items(photoUris) { uri ->
+                    AsyncImage(
+                        model = uri,
+                        contentDescription = null,
+                        modifier = Modifier.size(120.dp),
+                        contentScale = ContentScale.Crop
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(24.dp))
+
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = androidx.compose.ui.Alignment.CenterVertically
+            ) {
+                Text("PDF Markup", style = MaterialTheme.typography.titleMedium)
+                IconButton(onClick = { pdfPickerLauncher.launch("application/pdf") }) {
+                    Icon(Icons.Default.PictureAsPdf, contentDescription = "Select PDF")
+                }
+            }
+            
+            if (pdfUri != null) {
+                Text("Selected: ${pdfUri?.split("/")?.last()}", style = MaterialTheme.typography.bodySmall)
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f)
+                    .background(Color.LightGray)
+            ) {
+                // Future: Use AndroidView to host PDFView
+                PdfMarkupOverlay(
+                    markups = markups,
+                    onTap = { markups = markups + it }
                 )
             }
-        }
-        
-        Spacer(modifier = Modifier.height(24.dp))
-        
-        Text("PDF Markup (Tap to add Red Circle)", style = MaterialTheme.typography.titleMedium)
-        Box(
-            modifier = Modifier
-                .fillMaxWidth()
-                .weight(1f)
-                .background(Color.LightGray)
-        ) {
-            // This is where the PDF Renderer would render the page
-            // For now, we simulate the PDF page area
-            PdfMarkupOverlay(
-                markups = markups,
-                onTap = onAddMarkup
-            )
         }
     }
 }
